@@ -70,7 +70,7 @@
                     const waLink = (phone, message) =>
                         `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
 
-                    const pesanKetua = `Assalamu'alaikum, saya ingin mengkonfirmasi informasi maktab ini kepada Ketua Rombongan.
+                    const pesanKetua = `Assalamu'alaikum, saya ingin mengkonfirmasi informasi maktab HAF Meteseh 2025 ini kepada Ketua Rombongan.
 
         📌 *Sektor:* ${item.sektor}
         👤 *Koordinator Sektor:* ${item.koordinator_sektor}
