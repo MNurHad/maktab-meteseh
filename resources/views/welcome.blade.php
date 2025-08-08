@@ -109,7 +109,7 @@
                                 Jumlah Jama'ah: ${item.jumlah_jamaah}<br>
                                 <a href="https://maktab.synertia.id" target="_blank">🔗 Kunjungi maktab.synertia.id</a>
                                 <hr>
-                                <small class="text-muted">Note: Silakan tunjukkan hasil pencarian maktab ini ke panitia atau hubungi koordinator sektor untuk info lebih lanjut.</small>
+                                <small class="text-muted" style="font-size: 10px;">Note: Silakan tunjukkan hasil pencarian maktab ini ke panitia atau hubungi koordinator sektor untuk info lebih lanjut.</small>
                             </div>
                         </div>
                     `;
