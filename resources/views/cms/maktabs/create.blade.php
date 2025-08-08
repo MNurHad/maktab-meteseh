@@ -73,7 +73,7 @@
                         <!-- Capacity -->
                         <div class="col-md-3">
                             <label for="capacity" class="form-label">Capacity</label>
-                            <input type="number" name="capacity" min="1" id="capacity" class="form-control" required>
+                            <input type="number" name="capacity" min="1" id="capacity" class="form-control">
                             <div class="invalid-feedback">Capacity wajib diisi</div>
                         </div>
 
@@ -211,7 +211,8 @@
                         text: res.message || 'Data berhasil disimpan.',
                         confirmButtonColor: 'rgba(16, 214, 29, 1)'
                     }).then(() => {
-                        window.location.href = "{{ route('admin.maktabs.index') }}";
+                        // window.location.href = "{{ route('admin.maktabs.index') }}";
+                        location.reload();
                     });
                 },
                 error: function (xhr) {

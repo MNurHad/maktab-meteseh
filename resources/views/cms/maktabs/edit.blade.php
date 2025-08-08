@@ -75,7 +75,7 @@
                         <!-- Capacity -->
                         <div class="col-md-3">
                             <label for="capacity" class="form-label">Capacity</label>
-                            <input type="number" name="capacity" min="1" id="capacity" class="form-control" value="{{ $host['capacity'] ?? '' }}" required>
+                            <input type="number" name="capacity" min="1" id="capacity" class="form-control" value="{{ $host['capacity'] ?? '' }}">
                             <div class="invalid-feedback">Capacity wajib diisi</div>
                         </div>
 

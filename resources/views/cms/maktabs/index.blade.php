@@ -83,13 +83,13 @@
                                 return meta.row + 1;
                             }
                         },
-                        {data: 'sektor', name: 'sektor'},
+                        {data: 'sektor', name: 'sektor', searchable: false, orderable: false,},
                         {data: 'cp_name', name: 'cp_name'},
                         {data: 'address', name: 'address'},
-                        {data: 'owner', name: 'owner'},
-                        {data: 'phone', name: 'phone'},
+                        {data: 'owner', name: 'owner', searchable: false, orderable: false,},
+                        {data: 'phone', name: 'phone', searchable: false, orderable: false,},
                         {data: 'capacity', name: 'capacity'},
-                        {data: 'type', name: 'type'},
+                        {data: 'type', name: 'type', searchable: false, orderable: false,},
                         {data: 'is_available', name: 'is_available'},
                         {data: 'updated_at', name: 'updated_at', searchable: false, sClass: 'text-right'},
                         {data: 'actions', searchable: false, orderable: false, sClass: 'text-center'}
