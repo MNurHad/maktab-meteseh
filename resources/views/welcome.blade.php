@@ -90,7 +90,7 @@
                                 <h5 class="card-title mb-0">${item.sektor}</h5>
                             </div>
                             <div class="card-body">
-                                <strong>Informasi Maktab</strong><br>
+                                <strong>Koordinator Sektor</strong><br>
                                 Koordinator Sektor: ${item.koordinator_sektor}<br>
                                 ${isValidWA(item.wa_koordinator) ? `<a class="btn btn-sm btn-outline-success mt-1" href="${waLink(item.wa_koordinator, 'Assalamu’alaikum, saya ingin mengkonfirmasi informasi maktab ini kepada Koordinator Sektor.')}" target="_blank">Chat Koordinator</a>` : ''}
                                 <hr>
