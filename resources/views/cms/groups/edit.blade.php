@@ -25,7 +25,7 @@
                             <select name="sector_id" id="sector_id" class="select2 form-control" required>
                                 <option value="">-- Pilih Sektor --</option>
                                 @foreach(listSector() as $sector)
-                                    <option value="{{ $sector->id }}">{{ $sector->sektor }}</option>
+                                    <option value="{{ $sector->id }}" {{ ($group->sector_id == $sector->id) ? 'selected' : '' }}>{{ $sector->sektor }}</option>
                                 @endforeach
                             </select>
                             <div class="invalid-feedback">Sektor wajib diisi</div>
@@ -60,7 +60,7 @@
                         <!-- Address -->
                         <div class="col-md-12">
                             <label for="maktab_id" class="form-label">Maktab Location</label>
-                            <select name="maktab_id" id="maktab_id" class="select2 form-control" required>
+                            <select name="maktab_id" id="maktab_id" data-selected="{{ old('maktab_id', $data->maktab_id ?? '') }}" class="select2 form-control" required>
                                 <option value="">-- Pilih maktab --</option>
                             </select>
                             <div class="invalid-feedback">Coordinator wajib diisi</div>
@@ -90,24 +90,24 @@
                         <hr>
                         <div class="col-md-3">
                             <label for="leader" class="form-label">Leader Name</label>
-                            <input type="text" name="leader" id="leader" class="form-control" required>
+                            <input type="text" name="leader" id="leader" class="form-control" value="{{ $group->leader }}" required>
                             <div class="invalid-feedback">Leader Name wajib dipilih</div>
                         </div>
 
                         <div class="col-md-3">
                             <label for="phone" class="form-label">Leader Phone</label>
-                            <input type="number" name="phone" min="1" id="phone" class="form-control" required>
+                            <input type="number" name="phone" min="1" id="phone" class="form-control" value="{{ $group->phone_leader }}" required>
                             <div class="invalid-feedback">Leader Phone wajib dipilih</div>
                         </div>
 
                         <div class="col-md-3">
                             <label for="phone" class="form-label">Arrival Date</label>
-                            <input type="date" name="planing_at" id="planing_at" class="form-control">
+                            <input type="date" name="planing_at" id="planing_at" value="{{ $group->planing_at }}" class="form-control">
                         </div>
 
                         <div class="col-md-3">
                             <label for="phone" class="form-label">Departure Date</label>
-                            <input type="date" name="actual_at" id="actual_at" class="form-control">
+                            <input type="date" name="actual_at" id="actual_at" value="{{ $group->actual_at }}" class="form-control">
                         </div>
                         
                         <div class="col-md-3">
@@ -146,26 +146,26 @@
                             <select name="vehicle" id="vehicle" class="select2 form-control" required>
                                 <option value="">-- Pilih Kendaraan --</option>
                                 @foreach($vehicleTypes as $name)
-                                    <option value="{{ $name }}">{{ $name }}</option>
+                                    <option value="{{ $name }}" {{ ($group->vehicle === $name) ? 'selected' : '' }}>{{ $name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         
                         <div class="col-md-6">
                             <label for="jamaah" class="form-label">Jumlah Jama'ah</label>
-                            <input type="number" name="jamaah" min="1" id="jamaah" class="form-control" required>
+                            <input type="number" name="jamaah" min="1" id="jamaah" value="{{ $group->jamaah }}" class="form-control" required>
                             <div class="invalid-feedback">Jumlah Jama'ah wajib dipilih</div>
                         </div>
 
                         <div class="col-md-12">
                             <label for="alamat" class="form-label">Alamat Asal</label>
-                            <textarea id="alamat" name="alamat" class="form-control" rows="2"></textarea>
+                            <textarea id="alamat" name="alamat" class="form-control" rows="2">{{ $group->alamat }}</textarea>
                         </div>
                         <hr>
                         <div class="col-12">
                             <button class="btn btn-linear" id="btnSubmit" type="submit">
                                 <span id="submitSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                                <span id="submitText"><i class="bi bi-save2-fill"></i> Save</span>
+                                <span id="submitText"><i class="bi bi-save2-fill"></i> Update</span>
                             </button>
                         </div>
                      </form>
@@ -223,7 +223,7 @@
                         text: res.message || 'Data berhasil disimpan.',
                         confirmButtonColor: 'rgba(16, 214, 29, 1)'
                     }).then(() => {
-                        window.location.href = "{{ route('admin.maktabs.index') }}";
+                        window.location.href = "{{ route('admin.groups.index') }}";
                     });
                 },
                 error: function (xhr) {
@@ -245,6 +245,8 @@
 </script>
 <script>
     $(document).ready(function () {
+        const selectedMaktab = $('#maktab_id').val();
+        
         function fillMaktabData($option) {
             $('#host_name').val($option.data('host_name') || '');
             $('#host_phone').val($option.data('host_phone') || '');
@@ -260,7 +262,6 @@
             $('#maktab_id').html('<option value="">-- Pilih maktab --</option>').trigger('change');
         }
 
-        const selectedMaktab = $('#maktab_id').val();
         if (selectedMaktab) {
             const $selected = $('#maktab_id').find('option:selected');
             fillMaktabData($selected);
@@ -289,15 +290,20 @@
 
                 $.get(maktabUrl, function (res) {
                     let options = '<option value="">-- Pilih maktab --</option>';
+                    let maktab_id = "{{ $group->maktab_id }}";
+
                     res.forEach(function (maktab) {
+                        const selected = maktab_id == maktab.id ? 'selected' : '';
                         options += `<option value="${maktab.id}" 
                             data-host_name="${maktab.host_data?.owner || ''}" 
                             data-host_phone="${maktab.host_data?.phone || ''}" 
                             data-capacity="${maktab.host_data?.capacity || ''}" 
-                            data-address="${maktab.host_data?.address || ''}">
+                            data-address="${maktab.host_data?.address || ''}" 
+                            ${selected}>
                             ${maktab.host_data?.owner || ''} / ${maktab.host_data?.address || ''}
                         </option>`;
                     });
+
                     $('#maktab_id').html(options).trigger('change');
                 }).fail(function () {
                     resetMaktabFields();
@@ -328,9 +334,29 @@
                 $('#cp_phone').val('');
             }
         });
-    });
 
+        // === Auto Load Saat Edit Halaman ===
+        const selectedSector = $('#sector_id').val();
+        const selectedCoordinator = '{{ $group->coordinator_id ?? '' }}';
+
+        if (selectedSector) {
+            $('#sector_id').trigger('change');
+
+            $('#coordinator_id').val(selectedCoordinator).trigger('change');
+            $('#maktab_id').val(selectedMaktab).trigger('change');
+
+            const $selected = $('#maktab_id').find('option:selected');
+            fillMaktabData($selected);
+        }
+    });
+</script>
+<script>
     $(document).ready(function () {
+        const selectedProvince = "{{ $group->provincy }}";
+        const selectedCity = "{{ $group->city }}";
+        const selectedDistrict = "{{ $group->district }}";
+        const selectedVillage = "{{ $group->village }}";
+
         $('#province').on('change', function () {
             const provinceCode = $(this).val();
             $('#city').html('<option value="">-- Pilih Kota --</option>');
@@ -340,8 +366,11 @@
             if (provinceCode) {
                 $.get(`{{ route('getCities', ['provinceCode' => '__PROV__']) }}`.replace('__PROV__', provinceCode), function (data) {
                     data.forEach(function (item) {
-                        $('#city').append(`<option value="${item.code}">${item.name}</option>`);
+                        const selected = item.name === selectedCity ? 'selected' : '';
+                        $('#city').append(`<option value="${item.code}" ${selected}>${item.name}</option>`);
                     });
+
+                    if (selectedCity) $('#city').val(data.find(i => i.name === selectedCity)?.code).trigger('change');
                 });
             }
         });
@@ -354,8 +383,11 @@
             if (cityCode) {
                 $.get(`{{ route('getDistricts', ['cityCode' => '__CITY__']) }}`.replace('__CITY__', cityCode), function (data) {
                     data.forEach(function (item) {
-                        $('#district').append(`<option value="${item.code}">${item.name}</option>`);
+                        const selected = item.name === selectedDistrict ? 'selected' : '';
+                        $('#district').append(`<option value="${item.code}" ${selected}>${item.name}</option>`);
                     });
+
+                    if (selectedDistrict) $('#district').val(data.find(i => i.name === selectedDistrict)?.code).trigger('change');
                 });
             }
         });
@@ -367,11 +399,22 @@
             if (districtCode) {
                 $.get(`{{ route('getVillages', ['districtCode' => '__DIST__']) }}`.replace('__DIST__', districtCode), function (data) {
                     data.forEach(function (item) {
-                        $('#village').append(`<option value="${item.code}">${item.name}</option>`);
+                        const selected = item.name === selectedVillage ? 'selected' : '';
+                        $('#village').append(`<option value="${item.code}" ${selected}>${item.name}</option>`);
                     });
+
+                    if (selectedVillage) $('#village').val(data.find(i => i.name === selectedVillage)?.code);
                 });
             }
         });
+
+        // Trigger pertama jika sudah ada provinsi
+        if (selectedProvince) {
+            const selectedCode = $('#province option').filter(function () {
+                return $(this).text() === selectedProvince;
+            }).val();
+            $('#province').val(selectedCode).trigger('change');
+        }
     });
 </script>
 @endpush

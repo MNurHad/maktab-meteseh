@@ -222,7 +222,7 @@
                         text: res.message || 'Data berhasil disimpan.',
                         confirmButtonColor: 'rgba(16, 214, 29, 1)'
                     }).then(() => {
-                        window.location.href = "{{ route('admin.maktabs.index') }}";
+                        window.location.href = "{{ route('admin.groups.index') }}";
                     });
                 },
                 error: function (xhr) {

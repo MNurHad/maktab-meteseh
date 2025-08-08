@@ -111,7 +111,7 @@ class GroupController extends CmsController
             $group->actual_at   = $request->actual_at;
 
             $groupData = [
-                'province'    => masterName(Provincy::class, $request->province),
+                'provincy'    => masterName(Provincy::class, $request->province),
                 'city'        => masterName(City::class, $request->city),
                 'district'    => masterName(District::class, $request->district),
                 'village'     => masterName(Village::class, $request->village),
@@ -179,10 +179,16 @@ class GroupController extends CmsController
             ->join('sectors as s', 's.id', '=', 'm.sector_id')
             ->join('coordinators as c', 'c.id', '=', 'm.coordinator_id')
             ->select([
-                'g.*',
+                'g.id',
+                'g.leader',
+                'g.phone_leader',
+                'g.planing_at',
+                'g.actual_at',
                 'c.name as cp_name',
                 'c.phone as cp_phone',
                 's.sektor',
+                'm.sector_id',
+                'g.maktab_id',
                 DB::raw("JSON_UNQUOTE(JSON_EXTRACT(m.host_data, '$.address')) as address"),
                 DB::raw("JSON_UNQUOTE(JSON_EXTRACT(m.host_data, '$.owner')) as host_name"),
                 DB::raw("JSON_UNQUOTE(JSON_EXTRACT(m.host_data, '$.phone')) as host_phone"),
@@ -194,6 +200,7 @@ class GroupController extends CmsController
                 DB::raw("JSON_UNQUOTE(JSON_EXTRACT(g.group_data, '$.vehicle')) as vehicle"),
                 DB::raw("JSON_UNQUOTE(JSON_EXTRACT(g.group_data, '$.alamat')) as alamat"),
                 DB::raw("JSON_UNQUOTE(JSON_EXTRACT(g.group_data, '$.jamaah')) as jamaah"),
+                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(g.vehicle_data, '$.vehicle')) as vehicle"),
             ])
             ->where('g.id', $id)
             ->firstOrFail();
@@ -226,7 +233,102 @@ class GroupController extends CmsController
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'maktab_id'      => 'required|exists:maktabs,id',
+            'leader'         => 'required|string|max:255',
+            'phone'          => 'required|string|max:20',
+            'planing_at'     => 'nullable|date',
+            'actual_at'      => 'nullable|date',
+            'province'       => 'required|string',
+            'city'           => 'required|string',
+            'district'       => 'required|string',
+            'village'        => 'required|string',
+            'vehicle'        => 'required|string',
+            'jamaah'         => 'required|integer|min:1',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $group = Group::findOrFail($id);
+            $oldJamaah = (int)($group->group_data['jamaah'] ?? 0);
+            $oldMaktabId = $group->maktab_id;
+
+            $newMaktab = Maktab::findOrFail($request->maktab_id);
+
+            // Update group fields
+            $group->maktab_id = $request->maktab_id;
+            $group->leader = $request->leader;
+            $group->phone_leader = $request->phone;
+            $group->planing_at  = $request->planing_at;
+            $group->actual_at   = $request->actual_at;
+
+            // Update group_data
+            $groupData = [
+                'provincy'    => masterName(Provincy::class, $request->province),
+                'city'        => masterName(City::class, $request->city),
+                'district'    => masterName(District::class, $request->district),
+                'village'     => masterName(Village::class, $request->village),
+                'alamat'      => $request->alamat,
+                'jamaah'      => $request->jamaah,
+            ];
+            $group->group_data = $groupData;
+
+            // Update vehicle_data
+            $vehicle_data = [
+                'vehicle' => $request->vehicle,
+            ];
+            $group->vehicle_data = $vehicle_data;
+
+            $group->save();
+
+            // Update old maktab (rollback capacity if maktab_id changed)
+            if ($oldMaktabId !== $request->maktab_id) {
+                $oldMaktab = Maktab::findOrFail($oldMaktabId);
+                $oldHostData = $oldMaktab->host_data;
+                $oldHostData['capacity'] = (int)($oldHostData['capacity'] ?? 0) + $oldJamaah;
+                $oldMaktab->host_data = $oldHostData;
+                $oldMaktab->is_available = true;
+                $oldMaktab->save();
+            }
+
+            // Update new maktab capacity
+            $newHostData = $newMaktab->host_data;
+            $currentCapacity = (int)($newHostData['capacity'] ?? 0);
+
+            // Tambah kapasitas lama, lalu kurangi dengan jumlah jamaah baru
+            if ($oldMaktabId === $request->maktab_id) {
+                $currentCapacity += $oldJamaah;
+            }
+
+            $newCapacity = $currentCapacity - $request->jamaah;
+
+            if ($newCapacity < 0) {
+                DB::rollBack();
+                return response()->json(['message' => 'Jumlah jamaah melebihi kapasitas maktab.'], 422);
+            }
+
+            $newHostData['capacity'] = $newCapacity;
+            $newMaktab->host_data = $newHostData;
+            $newMaktab->is_available = $newCapacity > 0;
+            $newMaktab->save();
+
+            DB::commit();
+
+            return response()->json(['message' => 'Group berhasil diperbarui dan kapasitas maktab disesuaikan'], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            report($e);
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat memperbarui data',
+                'error' => [
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTrace()
+                ]
+            ], 500);
+        }
     }
 
     /**

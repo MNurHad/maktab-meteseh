@@ -30,7 +30,7 @@ class HomeController extends Controller
             ->orderBy('name')
             ->get()
             ->map(function ($item) {
-                $item->name = ucfirst(strtolower($item->name));
+                $item->name = ucwords(strtolower($item->name));
                 return $item;
             });
 
@@ -44,7 +44,7 @@ class HomeController extends Controller
             ->orderBy('name')
             ->get()
             ->map(function ($item) {
-                $item->name = ucfirst(strtolower($item->name));
+                $item->name = ucwords(strtolower($item->name));
                 return $item;
             });
 
@@ -58,7 +58,7 @@ class HomeController extends Controller
             ->orderBy('name')
             ->get()
             ->map(function ($item) {
-                $item->name = ucfirst(strtolower($item->name));
+                $item->name = ucwords(strtolower($item->name));
                 return $item;
             });
 
