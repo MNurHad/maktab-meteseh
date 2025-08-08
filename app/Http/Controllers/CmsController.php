@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Activity;
+use App\Models\Maktab;
+use App\Models\Group;
 use App\Services\AuthorizesRequests;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -182,42 +184,45 @@ class CmsController extends Controller
 
     public function setDataHome(): JsonResponse
     {
-        $counts = DB::table('products')
-        ->selectRaw('
-            COUNT(CASE WHEN is_published = 1 THEN 1 END) AS published,
-            COUNT(CASE WHEN is_published = 1 AND is_recommend = 1 THEN 1 END) AS recommended
-        ')
-        ->first();
+        $counts = DB::table('maktabs')
+                ->selectRaw('
+                    COUNT(CASE WHEN is_available = 1 THEN 1 END) AS available,
+                    COUNT(CASE WHEN is_available = 0 THEN 1 END) AS not_available
+                ')
+                ->first();
 
-        $mostViewed = DB::table('products')
-            ->select('point_name as name', 'count_view')
-            ->where('is_published', 1)
-            ->where('count_view', '>', 0)
-            ->orderByDesc('count_view')
-            ->first();
+        $assigns = DB::table('assign_maktabs')
+        ->select('group_data', 'vehicle_data')
+        ->get();
 
-        $mostFavorited = DB::table('products')
-            ->select('point_name as name', 'count_favorited')
-            ->where('is_published', 1)
-            ->where('count_favorited', '>', 0)
-            ->orderByDesc('count_favorited')
-            ->first();
+        $totalJamaah = 0;
+        $vehicleCounts = [];
+
+        foreach ($assigns as $row) {
+            $group = json_decode($row->group_data, true) ?? [];
+            $vehicle = json_decode($row->vehicle_data, true) ?? [];
+
+            $jamaah = isset($group['jamaah']) ? (int) $group['jamaah'] : 0;
+            $totalJamaah += $jamaah;
+
+            if (!empty($vehicle['vehicle'])) {
+                $vehicleName = $vehicle['vehicle'];
+                if (!isset($vehicleCounts[$vehicleName])) {
+                    $vehicleCounts[$vehicleName] = 0;
+                }
+                $vehicleCounts[$vehicleName] += 1;
+            }
+        }
 
         return response()->json([
             'statusCode' => 200,
             'data' => [
-                'published' => $counts->published,
-                'recommended' => $counts->recommended,
-                'most_viewed_product' => [
-                    'name' => $mostViewed->name ?? null,
-                    'count' => $mostViewed->count_view ?? 0,
-                ],
-                'most_favorited_product' => [
-                    'name' => $mostFavorited->name ?? null,
-                    'count' => $mostFavorited->count_favorited ?? 0,
-                ],
+                'published' => $counts->available,
+                'recommended' => $counts->not_available,
+                'jamaah' => $totalJamaah,
+                'vehicles' => $vehicleCounts
             ]
-        ], 200);
+        ]);
     }
 
     public function getSessionAccess()
