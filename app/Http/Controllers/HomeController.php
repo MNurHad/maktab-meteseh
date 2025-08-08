@@ -9,12 +9,86 @@ use App\Models\District;
 use App\Models\Village;
 use App\Models\Maktab;
 use Illuminate\Support\Facades\Cache;
+use DB;
 
 class HomeController extends Controller
 {
     public function index()
     {
         return view('welcome');
+    }
+
+    public function searchMaktab(Request $request)
+    {
+        $keyword = strtolower($request->input('keyword', ''));
+        $perPage = intval($request->input('per_page', 10));
+        $page = max(intval($request->input('page', 1)), 1);
+
+        $query = DB::table('assign_maktabs as am')
+            ->join('maktabs as m', 'm.id', '=', 'am.maktab_id')
+            ->join('coordinators as c', 'c.id', '=', 'm.coordinator_id')
+            ->join('sectors as s', 's.id', '=', 'm.sector_id')
+            ->select(
+                'am.id',
+                'am.leader',
+                'am.phone_leader',
+                's.sektor',
+                'c.name as koordinator_sektor',
+                'c.phone as wa_koordinator',
+                'm.host_data',
+                'am.group_data'
+            )
+            ->when($keyword, function ($query) use ($keyword) {
+                $query->where(function ($q) use ($keyword) {
+                    $q->whereRaw('LOWER(am.leader) LIKE ?', ["%$keyword%"])
+                    ->orWhereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(group_data, '$.provincy'))) LIKE ?", ["%$keyword%"])
+                    ->orWhereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(group_data, '$.city'))) LIKE ?", ["%$keyword%"])
+                    ->orWhereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(group_data, '$.district'))) LIKE ?", ["%$keyword%"]);
+                });
+            });
+
+        $total = $query->count();
+        $results = $query->offset(($page - 1) * $perPage)
+                        ->limit($perPage)
+                        ->get();
+
+        $formatted = $results->map(function ($item) {
+            $group = json_decode($item->group_data ?? '{}', true);
+            $host  = json_decode($item->host_data ?? '{}', true);
+
+            return [
+                'sektor'             => $item->sektor ?? '-',
+                'koordinator_sektor' => $item->koordinator_sektor ?? '-',
+
+                'ketua_rombongan'    => $item->leader ?? '-',
+                'wa_ketua'           => $item->phone_leader ?? '62',
+
+                'kota'               => $group['city'] ?? '-',
+                'kecamatan'          => $group['district'] ?? '-',
+                'provinsi'           => $group['provincy'] ?? '-',
+                'jumlah_jamaah'      => $group['jamaah'] ?? 0,
+
+                'tuan_rumah'         => $host['owner'] ?? '-',
+                'alamat_maktab'      => $host['address'] ?? '-',
+
+                'wa_koordinator'     => $item->wa_koordinator ?? '62',
+                'wa_tuan_rumah'      => $host['phone'] ?? '62',
+            ];
+        });
+
+        return response()->json([
+            'statusCode' => 200,
+            'message' => $formatted->isEmpty()
+                ? 'Data tidak ditemukan'
+                : 'Data ditemukan',
+            'data' => $formatted,
+            'pagination' => [
+                'total' => $total,
+                'per_page' => $perPage,
+                'current_page' => $page,
+                'last_page' => ceil($total / $perPage),
+            ]
+        ], 200);
     }
 
     public function getBySector($id)
@@ -77,6 +151,4 @@ class HomeController extends Controller
 
         return response()->json($villages);
     }
-
-
 }

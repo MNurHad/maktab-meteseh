@@ -15,6 +15,7 @@ Route::get('get-cities/{provinceCode}', [HomeController::class, 'getCities'])->n
 Route::get('get-districts/{cityCode}', [HomeController::class, 'getDistricts'])->name('getDistricts');
 Route::get('get-villages/{districtCode}', [HomeController::class, 'getVillages'])->name('getVillages');
 Route::get('maktab-by-sector/{id}', [HomeController::class, 'getBySector'])->name('getBySector');
+Route::get('v1/assign-maktabs/search', [HomeController::class, 'searchMaktab'])->name('searchMaktab');
 
 Route::prefix('secret')
     ->name('admin.')
