@@ -8,6 +8,7 @@ use App\Models\City;
 use App\Models\District;
 use App\Models\Village;
 use App\Models\Maktab;
+use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
@@ -25,44 +26,57 @@ class HomeController extends Controller
 
     public function getCities($provinceCode)
     {
-        $cities = City::where('province_code', $provinceCode)
-            ->select('code', 'name')
-            ->orderBy('name')
-            ->get()
-            ->map(function ($item) {
-                $item->name = ucwords(strtolower($item->name));
-                return $item;
-            });
+        $cacheKey = 'cities_' . $provinceCode;
+
+        $cities = Cache::rememberForever($cacheKey, function () use ($provinceCode) {
+            return City::where('province_code', $provinceCode)
+                ->select('code', 'name')
+                ->orderBy('name')
+                ->get()
+                ->map(function ($item) {
+                    $item->name = ucwords(strtolower($item->name));
+                    return $item;
+                });
+        });
 
         return response()->json($cities);
     }
 
     public function getDistricts($cityCode)
     {
-        $districts = District::where('city_code', $cityCode)
-            ->select('code', 'name')
-            ->orderBy('name')
-            ->get()
-            ->map(function ($item) {
-                $item->name = ucwords(strtolower($item->name));
-                return $item;
-            });
+        $cacheKey = 'districts_' . $cityCode;
+
+        $districts = Cache::rememberForever($cacheKey, function () use ($cityCode) {
+            return District::where('city_code', $cityCode)
+                ->select('code', 'name')
+                ->orderBy('name')
+                ->get()
+                ->map(function ($item) {
+                    $item->name = ucwords(strtolower($item->name));
+                    return $item;
+                });
+        });
 
         return response()->json($districts);
     }
 
     public function getVillages($districtCode)
     {
-        $villages = Village::where('district_code', $districtCode)
-            ->select('code', 'name')
-            ->orderBy('name')
-            ->get()
-            ->map(function ($item) {
-                $item->name = ucwords(strtolower($item->name));
-                return $item;
-            });
+        $cacheKey = 'villages_' . $districtCode;
+
+        $villages = Cache::rememberForever($cacheKey, function () use ($districtCode) {
+            return Village::where('district_code', $districtCode)
+                ->select('code', 'name')
+                ->orderBy('name')
+                ->get()
+                ->map(function ($item) {
+                    $item->name = ucwords(strtolower($item->name));
+                    return $item;
+                });
+        });
 
         return response()->json($villages);
     }
+
 
 }

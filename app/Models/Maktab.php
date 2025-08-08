@@ -64,8 +64,14 @@ class Maktab extends Model
             ->editColumn('address', function ($row) {
                 return $row->address ?? '-';
             })
-            ->addColumn('owner', function ($row) {
+            ->editColumn('owner', function ($row) {
                 return $row->owner ?? '-';
+            })
+            ->filterColumn('owner', function($query, $keyword) {
+                $query->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(m.host_data, '$.owner')) LIKE ?", ["%{$keyword}%"]);
+            })
+            ->orderColumn('owner', function ($query, $order) {
+                $query->orderByRaw("JSON_UNQUOTE(JSON_EXTRACT(m.host_data, '$.owner')) {$order}");
             })
             ->addColumn('phone', function ($row) {
                 return $row->phone ?? '-';

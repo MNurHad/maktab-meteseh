@@ -71,10 +71,23 @@ class Group extends Model
             ->editColumn('address', function ($row) {
                 return $row->address ?? '-';
             })
+            ->filterColumn('address', function($query, $keyword) {
+                $query->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(m.host_data, '$.address')) LIKE ?", ["%{$keyword}%"]);
+            })
+            ->orderColumn('address', function ($query, $order) {
+                $query->orderByRaw("JSON_UNQUOTE(JSON_EXTRACT(m.host_data, '$.address')) {$order}");
+            })
             ->addColumn('owner', function ($row) {
                 $owner = $row->owner ?? '-';
                 $phone = $row->phone ?? '-';
                 return "$owner<br><small class=\"text-muted\">$phone</small>";
+            })
+            ->filterColumn('owner', function ($query, $keyword) {
+                $query->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(m.host_data, '$.owner')) LIKE ?", ["%{$keyword}%"])
+                    ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(m.host_data, '$.phone')) LIKE ?", ["%{$keyword}%"]);
+            })
+            ->orderColumn('owner', function ($query, $order) {
+                $query->orderByRaw("JSON_UNQUOTE(JSON_EXTRACT(m.host_data, '$.owner')) $order");
             })
             ->addColumn('group_location', function ($row) {
                 return ($row->provincy ?? '-') . ' / ' . ($row->city ?? '-');

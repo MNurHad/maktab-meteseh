@@ -83,14 +83,14 @@
                                 return meta.row + 1;
                             }
                         },
-                        {data: 'sektor', name: 'sektor', searchable: false, orderable: false,},
-                        {data: 'cp_name', name: 'cp_name'},
-                        {data: 'address', name: 'address'},
-                        {data: 'owner', name: 'owner', searchable: false, orderable: false,},
-                        {data: 'phone', name: 'phone', searchable: false, orderable: false,},
+                        {data: 'sektor', name: 'sektor', searchable: false, orderable: false},
+                        {data: 'cp_name', name: 'coordinators.name', searchable: false, orderable: false},
+                        {data: 'address', name: 'address', searchable: false, orderable: false},
+                        {data: 'owner', name: 'owner'},
+                        {data: 'phone', name: 'phone', searchable: false, orderable: false},
                         {data: 'capacity', name: 'capacity'},
-                        {data: 'type', name: 'type', searchable: false, orderable: false,},
-                        {data: 'is_available', name: 'is_available'},
+                        {data: 'type', name: 'type', searchable: false, orderable: false},
+                        {data: 'is_available', name: 'is_available', searchable: false, orderable: false},
                         {data: 'updated_at', name: 'updated_at', searchable: false, sClass: 'text-right'},
                         {data: 'actions', searchable: false, orderable: false, sClass: 'text-center'}
                     ],
