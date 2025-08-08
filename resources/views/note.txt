@@ -1,0 +1,23 @@
+<div class="stats">
+            <div class="stat-card">
+                <h3>Total Maktabs</h3>
+                <p>196</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total Persons</h3>
+                <p>3334</p>
+                <div style="color:#555;font-size:14px;">of 88 bookings from</div>
+            </div>
+            <div class="stat-card">
+                <h3>Vehicle Distribution</h3>
+                <div class="vehicle-icons">
+                    <div class="vehicle-icon" style="color:#3578e5;">🚌 28</div>
+                    <div class="vehicle-icon" style="color:#b455b6;">🚗 26</div>
+                    <div class="vehicle-icon" style="color:#e53935;">🚶‍♂️ 17</div>
+                    <div class="vehicle-icon" style="color:#ff9800;">🚛 11</div>
+                    <div class="vehicle-icon" style="color:#4caf50;">🚐 4</div>
+                    <div class="vehicle-icon" style="color:#673ab7;">🧳 2</div>
+                </div>
+                <div style="color:#555;font-size:14px; margin-top:4px;">of total 88 vehicles from</div>
+            </div>
+        </div>
